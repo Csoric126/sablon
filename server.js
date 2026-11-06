@@ -98,15 +98,32 @@ app.post("/mufajok/ujmufaj", async (req,res) =>{
         const {nev} = req.body;
 
         if(!id || !nev){
-            return res.status(400)({error : "Az id és a név kitöltése kötelező"});
+            return res.status(400).json({error : "Az id és a név kitöltése kötelező"});
         }
 
         const sql = "INSERT INTO mufajok (name) VALUES (?)";
-        const [results] = await conn.query(sql ["Akármiamitakarsz"])
-        res.status(201)({ message : "Műfaj sikeresen hozzáadva", name : results.name})
+        const [results] = await conn.promise().query(sql ["Akármiamitakarsz"])
+        res.status(201).json({ message : "Műfaj sikeresen hozzáadva", name : results.name})
     } catch (error) {
         console.error("Hiba a beszúrás során", error)
-        res.status(500)({error: "Adatbázis történt a beszúráskor"})
+        res.status(500).json({error: "Adatbázis hiba történt a beszúráskor"})
+    }
+})
+
+app.post("/konyvek/ujkonyv", async (req,res) =>{
+    try {
+        const {mufaj_id, cim, kiadasi_ev, oldalszam, kolcsonozheto} = req.body;
+
+        if(!mufaj_id || !cim || !kiadasi_ev || !oldalszam || !kolcsonozheto){
+            return res.status(400).json({error : "Az mufaj id, a cím, a kiadási év, az oldalszám és a kölcsönözhetősége kitöltése kötelező"});
+        }
+
+        const sql = "INSERT INTO konyvek (mufaj_id, cim, kiadasi_ev, oldalszam, kolcsonozheto) VALUES (?,?,?,?,?)";
+        const [results] = await conn.promise().query(sql, [mufaj_id, cim, kiadasi_ev, oldalszam, kolcsonozheto])
+        res.status(201).json({message : "Könyv sikeresen hozzáadva", cim: results.cim})
+    } catch (error) {
+        console.error("Hiba a beszúrás során", error)
+        res.status(500).json({error: "Adatbázis hiba történt a beszúráskor"})
     }
 })
 
